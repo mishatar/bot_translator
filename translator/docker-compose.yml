@@ -7,5 +7,3 @@ services:
     restart: always
     volumes:
       - /var/lib/postgresql/data/
-    env_file:
-      - ./.env
