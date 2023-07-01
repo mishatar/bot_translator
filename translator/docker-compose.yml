@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  bot:
+    build: .
+    image: mishatar26/bot_translator:latest
+    restart: always
+    volumes:
+      - /var/lib/postgresql/data/
+    env_file:
+      - ./.env

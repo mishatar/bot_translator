@@ -10,6 +10,7 @@ python = "^3.10"
 aiogram = "^2.25.1"
 googletrans-py = "^4.0.0"
 python-dotenv = "^1.0.0"
+pytest-asyncio = "^0.21.0"
 
 
 [tool.poetry.group.dev.dependencies]
