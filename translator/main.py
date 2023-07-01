@@ -1,19 +1,14 @@
-from googletrans import Translator
-import os
-
-from dotenv import load_dotenv
 import aiogram
 import sqlite3
+
+from config import TOKEN, HISTORYMSG
+from googletrans import Translator
 from aiogram import types
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
-load_dotenv()
-HISTORYMSG = "Выберите пользователя, чью историю хотите посмотреть"
-name = None
 transl = Translator()
 
-TOKEN = os.getenv('TOKEN')
 con = sqlite3.connect('db.sqlite')
 storage = MemoryStorage()
 bot = aiogram.Bot(token=TOKEN)
@@ -24,6 +19,7 @@ print('started')
 
 @dp.message_handler(commands=['start'])
 async def process_start_command(msg: types.Message):
+    ''' Обработка команды /start и создание БД. '''
 
     cur = con.cursor()
     cur.executescript('''
@@ -42,7 +38,6 @@ async def process_start_command(msg: types.Message):
     your_name = msg.from_user.username
     cur.execute("SELECT * FROM users WHERE users.name = '%s'" % (your_name))
     myresult = cur.fetchall()
-    print(myresult)
 
     if myresult is None or myresult == [] or myresult == ():
         cur.execute("INSERT INTO users(name) VALUES ('%s')" % (your_name))
@@ -59,6 +54,9 @@ async def process_start_command(msg: types.Message):
 
 @dp.message_handler(commands=['history'])
 async def process_history_command(message: types.Message):
+    ''' Обработка команды /history и создание клавиатуры,
+        на основе всех зарегистрированных пользователей. '''
+
     keyb = InlineKeyboardMarkup()
 
     con = sqlite3.connect('db.sqlite')
@@ -78,6 +76,7 @@ async def process_history_command(message: types.Message):
 
 @dp.callback_query_handler(lambda c: c.data)
 async def process_callback_kb1btn1(callback_query: types.CallbackQuery):
+    ''' Вывод всей истории переводов выбранного пользователя. '''
     global your_name
     your_name = callback_query.from_user.username
     con = sqlite3.connect('db.sqlite')
@@ -99,6 +98,7 @@ async def process_callback_kb1btn1(callback_query: types.CallbackQuery):
 
 @dp.message_handler()
 async def echo_message(msg: types.Message):
+    ''' Функция для перевода введенного текста. '''
     word = transl.translate(msg.text, dest='ru').text
     con_text = msg.text + ' - ' + word
     con = sqlite3.connect('db.sqlite')
